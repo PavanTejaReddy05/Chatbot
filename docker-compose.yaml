@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: chatbot_backend
+    ports:
+      - "8000:8000" # Maps FastAPI's port to the host machine
+    environment:
+      - COHERE_API_KEY=${COHERE_API_KEY} # Pass environment variables
+    volumes:
+      - .:/app # Mounts the code for live development
+    depends_on:
+      - frontend # Optional: if your backend relies on the frontend service
+    networks:
+      - chatbot_network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: chatbot_frontend
+    ports:
+      - "3000:3000" # Maps React's development server port to the host machine
+    volumes:
+      - ./src:/app/src # Mounts the code for live development
+    networks:
+      - chatbot_network
+
+networks:
+  chatbot_network:
+    driver: bridge
