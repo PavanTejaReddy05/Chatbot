@@ -1,0 +1,8 @@
+fastapi==0.100.0       # Core framework
+uvicorn==0.23.2        # ASGI server for FastAPI
+pydantic==1.10.12      # Data validation and parsing
+python-dotenv==1.0.0   # For loading environment variables
+cohere==4.6.0          # Cohere API client
+pdfplumber==0.10.2     # Extract text from PDFs
+PyPDF2==3.0.1          # Optional dependency for PDF parsing
+regex==2023.10.3       # For advanced regular expressions
