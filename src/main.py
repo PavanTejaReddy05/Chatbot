@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv(dotenv_path="D:/Programming/React files/chatbot/src/Cohere_API_Key.env")  # Load environment variables from .env file
+print(f"COHERE_API_KEY: {os.getenv('COHERE_API_KEY')}")
+# load_dotenv(dotenv_path="..env/")  # Load environment variables from .env file
 
 cohere_api_key = os.getenv("COHERE_API_KEY")
 if not cohere_api_key:
