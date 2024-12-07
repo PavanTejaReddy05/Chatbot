@@ -21,6 +21,8 @@ pipeline {
                 sh 'npm --version'
                 sh 'npm install'
                 sh 'npm install axios @types/axios'
+                sh 'docker compose down'
+                sh 'docker compose up -d --build'
             }
         }
 
