@@ -10,7 +10,8 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/PavanTejaReddy05/Chatbot.git'
+                git branch: 'main', 
+                    url: 'https://github.com/PavanTejaReddy05/Chatbot.git'
             }
         }
 
