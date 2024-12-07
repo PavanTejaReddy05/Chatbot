@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_HUB_CREDENTIALS = credentials('docker-hub-creds')
+        DOCKER_HUB_CREDENTIALS = credentials('docker_cred')
         IMAGE_NAME_FRONTEND = 'pavantejareddy05/react-chatbot-frontend'
         IMAGE_NAME_BACKEND = 'pavantejareddy05/react-chatbot-backend'
     }
@@ -59,10 +59,11 @@ pipeline {
             }
         }
     }
-
     post {
         always {
-            cleanWs() // Clean workspace
+            node {
+                cleanWs() // Clean workspace inside a node context
+            }
         }
     }
 }
