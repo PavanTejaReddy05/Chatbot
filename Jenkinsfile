@@ -15,7 +15,7 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {+
+        stage('Install Dependencies') {
             steps {
                 sh 'node --version'
                 sh 'npm --version'
@@ -25,7 +25,7 @@ pipeline {
 
         stage('Build Frontend') {
             steps {
-                dir('frontend') {
+                dir('frontend') { // Adjust 'frontend' to the actual folder containing your frontend code
                     sh 'npm run build'
                 }
             }
@@ -34,11 +34,12 @@ pipeline {
         stage('Docker Build & Push') {
             steps {
                 script {
-                    //login to Docker Hub
+                    // Login to Docker Hub
                     sh """
                     echo $DOCKER_HUB_CREDENTIALS_PSW | docker login -u $DOCKER_HUB_CREDENTIALS_USR --password-stdin
                     """
-                  // Build and push frontend image
+
+                    // Build and push frontend image
                     sh """
                     docker build -f Dockerfile.frontend -t $IMAGE_NAME_FRONTEND:latest .
                     docker push $IMAGE_NAME_FRONTEND:latest
@@ -56,21 +57,24 @@ pipeline {
         stage('Deploy Containers') {
             steps {
                 script {
+                    // Safely bring down any existing containers and deploy new ones
                     sh 'docker-compose down || true'
                     sh 'docker-compose up -d --build'
                 }
             }
         }
     }
+
     post {
         always {
             echo 'Cleaning workspace...'
-            cleanWs() // Clean workspace inside a node context
-            }
+            cleanWs() // Clean workspace to avoid leftovers
+        }
         success {
             echo 'Pipeline executed successfully!'
         }
         failure {
             echo 'Pipeline failed. Check the logs for details.'
         }
+    }
 }
