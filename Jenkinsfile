@@ -15,17 +15,17 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Install Dependencies') {+
             steps {
-                dir('.') {
-                    sh 'npm install'
-                }
+                sh 'node --version'
+                sh 'npm --version'
+                sh 'npm install'
             }
         }
 
         stage('Build Frontend') {
             steps {
-                dir('src') {
+                dir('frontend') {
                     sh 'npm run build'
                 }
             }
@@ -34,17 +34,19 @@ pipeline {
         stage('Docker Build & Push') {
             steps {
                 script {
-                    // Build and push frontend image
+                    //login to Docker Hub
+                    sh """
+                    echo $DOCKER_HUB_CREDENTIALS_PSW | docker login -u $DOCKER_HUB_CREDENTIALS_USR --password-stdin
+                    """
+                  // Build and push frontend image
                     sh """
                     docker build -f Dockerfile.frontend -t $IMAGE_NAME_FRONTEND:latest .
-                    echo $DOCKER_HUB_CREDENTIALS_PSW | docker login -u $DOCKER_HUB_CREDENTIALS_USR --password-stdin
                     docker push $IMAGE_NAME_FRONTEND:latest
                     """
 
                     // Build and push backend image
                     sh """
                     docker build -f Dockerfile.backend -t $IMAGE_NAME_BACKEND:latest .
-                    echo $DOCKER_HUB_CREDENTIALS_PSW | docker login -u $DOCKER_HUB_CREDENTIALS_USR --password-stdin
                     docker push $IMAGE_NAME_BACKEND:latest
                     """
                 }
@@ -55,14 +57,20 @@ pipeline {
             steps {
                 script {
                     sh 'docker-compose down || true'
-                    sh 'docker-compose up -d'
+                    sh 'docker-compose up -d --build'
                 }
             }
         }
     }
     post {
         always {
+            echo 'Cleaning workspace...'
             cleanWs() // Clean workspace inside a node context
             }
+        success {
+            echo 'Pipeline executed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Check the logs for details.'
         }
 }
