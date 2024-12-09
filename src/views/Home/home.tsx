@@ -31,10 +31,21 @@ const Home: React.FC = () => {
       setResponse("Please enter a question.");
       return;
     }
-
+  
     setIsLoading(true); // Show loading indicator
+  
     try {
-      const res = await axios.post<AskResponse>(`${BASE_URL}/ask`, { question });
+      const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
+      const headers = {
+        Authorization: `Bearer ${apiKey}`,
+      };
+  
+      const res = await axios.post<AskResponse>(
+        `${BASE_URL}/ask`, 
+        { question },
+        { headers }  // Add headers here
+      );
+  
       setResponse(res.data.answer); // Type-safe access to response
     } catch (error) {
       console.error("Error in handleSubmit:", error);
@@ -42,35 +53,48 @@ const Home: React.FC = () => {
     } finally {
       setIsLoading(false); // Hide loading indicator
     }
-  };
+  };  
 
   const handleFileUpload = async (file: File) => {
-    if (file.size > 5 * 1024 * 1024) { // 5MB size limit
+    // File size validation (5MB limit)
+    if (file.size > 5 * 1024 * 1024) { 
       setResponse("File size exceeds the 5MB limit.");
       return;
     }
-
+  
+    // File type validation (only TXT and PDF)
     if (!['text/plain', 'application/pdf'].includes(file.type)) {
       setResponse("Unsupported file type. Only TXT and PDF files are allowed.");
       return;
     }
-
+  
     setIsLoading(true); // Show loading indicator
+  
     const formData = new FormData();
     formData.append("file", file);
-
+  
+    // Get the token (this could be an environment variable or from another source)
+    const token = process.env.REACT_APP_OPENAI_API_KEY;
+  
     try {
+      // Upload the file with the Authorization header
       const res = await axios.post<UploadFileResponse>(`${BASE_URL}/uploadfile/`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`,  // Add Authorization header
+        },
       });
+  
+      // Update response with success or file content
       setResponse(res.data.full_text || "File uploaded successfully.");
     } catch (error) {
+      // Handle error in file upload
       console.error("Failed to upload file:", error);
       setResponse("Failed to upload file.");
     } finally {
       setIsLoading(false); // Hide loading indicator
     }
-  };
+  };  
 
   return (
     <div className="html">

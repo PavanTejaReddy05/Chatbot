@@ -8,32 +8,34 @@ pipeline {
     }
 
     stages {
+        stage('Verify Node.js Installation') {
+            steps {
+                sh 'node --version'
+                sh 'npm --version'
+            }
+        }
         stage('Clone Repository') {
             steps {
                 git branch: 'main', 
                     url: 'https://github.com/PavanTejaReddy05/Chatbot.git'
             }
         }
-
         stage('Install Dependencies') {
             steps {
-                sh 'node --version'
-                sh 'npm --version'
+                // sh 'node --version'
+                // sh 'npm --version'
                 sh 'npm install'
                 sh 'npm install axios @types/axios'
-                sh 'docker-compose down'
-                sh 'docker-compose up -d --build'
+                // sh 'docker-compose down'
+                // sh 'docker-compose up -d --build'
             }
         }
-
         stage('Build Frontend') {
             steps {
-                dir('frontend') { // Adjust 'frontend' to the actual folder containing your frontend code
                     sh 'npm run build'
                 }
             }
         }
-
         stage('Docker Build & Push') {
             steps {
                 script {
@@ -56,7 +58,6 @@ pipeline {
                 }
             }
         }
-
         stage('Deploy Containers') {
             steps {
                 script {
