@@ -1,0 +1,81 @@
+body{
+    background-image: url(./BGround2.jpg);
+    background-position:center;
+    background-size:cover;
+    height: 97vh;
+    background-repeat: no-repeat;
+}
+.data{
+    padding-top: 5%;
+    margin-left: 10%;
+    width: 500px;
+    display: flex;
+    flex-direction: column;
+}
+.Res {
+    background-color: rgba(240, 248, 255, 0.5); /* AliceBlue with 50% transparency */
+    border-radius: 15px;
+    width: 750px;
+    margin-bottom: 15%;
+    padding: 10%;
+}
+
+
+.Res li {
+    /* background-color: cornflowerblue; */
+    color: black;
+    font-size: large;
+    font-weight: normal; /* Instead of lighter */
+    /* opacity: 1; */
+}
+
+.Ques {
+    align-self: center;
+    width: 99%;
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
+
+.ipt {
+    display: flex;
+    align-items: center; /* Center-align content vertically */
+    padding: 5px 10px; /* Add some padding inside the container */
+    border-radius: 15px;
+    background-color: aliceblue;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for better visibility */
+}
+
+#icn {
+    font-size: 40px; /* Icon size */
+    margin-right: 10px; /* Space between the icon and input */
+    cursor: pointer;
+    color: #007BFF; /* Use a primary color for better visibility */
+    transition: color 0.3s ease; /* Smooth transition for hover effect */
+}
+
+#icn:hover {
+    color: #0056b3; /* Darker shade for hover effect */
+}
+
+.ipt input {
+    height: 100%; /* Ensure the input takes full height */
+    width: 100%; /* Fill the remaining space */
+    border-radius: 15px;
+    font-size: large;
+    text-align: center;
+    border: none;
+    background-color: transparent; /* Match the background */
+    outline: none; /* Remove the default focus outline */
+}
+
+.ipt input::placeholder {
+    text-align: center;
+    color: #6c757d; /* Muted text for placeholder */
+    font-style: italic; /* Optional: style placeholder text */
+}
+
+.ipt input:focus {
+    outline: none; /* Remove default focus outline */
+    /* box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); Add a subtle focus ring */
+}
+

@@ -1,0 +1,19 @@
+<html class="html">
+    <body>
+        <div class="data">
+            <div class="Res">
+                <h2>Response</h2>
+                <li>
+                        {{responseText}}
+                </li>
+            </div>
+            <div class="Ques">
+                <div class="ipt">
+                    <fa-icon id="icn" [icon]="faPaperclip" (click)="fileInput.click()"></fa-icon>
+                    <input #fileInput type="file" (change)="onFileSelected($event)" style="display: none;" />
+                    <input type="text" [(ngModel)]="userInput" (keyup.enter)="onSubmit()" placeholder="Type here to ask"/>
+                </div>
+            </div> 
+        </div>   
+    </body>
+</html>

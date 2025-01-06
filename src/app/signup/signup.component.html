@@ -1,0 +1,75 @@
+<html>
+  <div class="hml">  
+    <div class="signup-container">
+      <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+        <h2>Signup Form</h2>
+        <div class="nm">
+          <div class="nm1">
+            <label for="First_Name">First Name:</label>
+            <input id="First_Name" formControlName="First_Name" type="text" />
+            <div *ngIf="signupForm.get('First_Name')?.invalid && signupForm.get('First_Name')?.touched">
+              First Name is required.
+            </div>
+          </div>
+
+          <div class="nm2">
+            <label for="Last_Name">Last Name:</label>
+            <input id="Last_Name" formControlName="Last_Name" type="text" />
+            <div *ngIf="signupForm.get('Last_Name')?.invalid && signupForm.get('Last_Name')?.touched">
+              Last Name is required.
+            </div>
+          </div>
+        </div>
+    
+        <div>
+          <label for="Email">Email:</label>
+          <input id="Email" formControlName="Email" type="email" />
+          <div *ngIf="signupForm.get('Email')?.invalid && signupForm.get('Email')?.touched">
+            Please enter a valid email.
+          </div>
+        </div>
+    
+        <div>
+          <label for="Ph_No">Phone Number:</label>
+          <input id="Ph_No" formControlName="Ph_No" type="text" />
+          <div *ngIf="signupForm.get('Ph_No')?.invalid && signupForm.get('Ph_No')?.touched">
+            Please enter a valid 10-digit phone number.
+          </div>
+        </div>
+    
+        <div>
+          <label for="DoB">Date of Birth:</label>
+          <input id="DoB" formControlName="DoB" type="date" />
+          <div *ngIf="signupForm.get('DoB')?.invalid && signupForm.get('DoB')?.touched">
+            Date of Birth is required.
+          </div>
+        </div>
+    
+        <div>
+          <label for="Password">Password:</label>
+          <input id="Password" formControlName="Password" type="password" />
+          <div *ngIf="signupForm.get('Password')?.invalid && signupForm.get('Password')?.touched">
+            Password must be at least 6 characters.
+          </div>
+        </div>
+    
+        <div>
+          <label for="Confirm_Password">Confirm Password:</label>
+          <input id="Confirm_Password" formControlName="Confirm_Password" type="password" />
+          <div *ngIf="signupForm.get('Confirm_Password')?.invalid && signupForm.get('Confirm_Password')?.touched">
+            Please confirm your password.
+          </div>
+        </div>
+
+        <div>
+          <p>Already have an account? <a id="si" routerLink="/signin">Log in</a></p>    
+        </div>
+
+        <button type="submit" [disabled]="signupForm.invalid">Signup</button>
+        
+      </form>
+      <div *ngIf="successMessage" class="success">{{ successMessage }}</div>
+      <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+    </div>
+  </div>
+</html>
