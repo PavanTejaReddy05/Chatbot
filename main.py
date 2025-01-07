@@ -12,6 +12,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi import BackgroundTasks
 from pydantic import BaseModel
 import cohere
+import base64
 from gtts import gTTS
 from typing import Dict
 from dotenv import load_dotenv
@@ -138,17 +139,15 @@ def LogIn(ema:str, Pwd:str):
 #     if os.path.exists(file_path):
 #         os.remove(file_path)
 #         print(f"Deleted file: {file_path}")
-async def delete_audio_file(file_path:Path):
+async def delete_audio_file(file_path: Path):
+    """
+    Deletes the specified audio file.
+    """
     try:
-        # Wait for a while to allow the client to download the file
-        await asyncio.sleep(60)  # Delay for 60 seconds
         if file_path.exists():
-            file_path.unlink()  # Safely delete the file
-            print(f"Deleted file: {file_path}")
-        else:
-            print(f"File already deleted or not found: {file_path}")
+            file_path.unlink()
     except Exception as e:
-        print(f"Error deleting file {file_path}: {e}")
+        print(f"Failed to delete file {file_path}: {e}")
 
 @app.post("/ask")
 async def ask_cohere(
@@ -193,31 +192,40 @@ async def ask_cohere(
             raise HTTPException(status_code=500, detail="No response from Cohere.")
         
         answer = response.generations[0].text.strip()
+        AUDIO_FILE_NAME = "Response.mp3"
+        file_path = Path(AUDIO_FILE_NAME)
+        if file_path.exists():
+            file_path.unlink()  # Delete the file
 
-         # Generate audio using GTTS
-        unique_filename = f"{uuid4()}.mp3"
         tts = gTTS(text=answer, lang='en')
-        tts.save(unique_filename)
+        tts.save(AUDIO_FILE_NAME)
+        # Encode audio as base64
+        with open(AUDIO_FILE_NAME, "rb") as audio_file:
+            encoded_audio = base64.b64encode(audio_file.read()).decode('utf-8')
 
-        background_tasks.add_task(delete_audio_file, Path(unique_filename))
+        # Return JSON response with text and Base64-encoded audio
         return JSONResponse(content={
             "question": question.question,
             "answer": answer,
-            "audio_url": f"http://127.0.0.1:8000/audio/{unique_filename}"
-        })
-    
+            "audio_base64": encoded_audio
+            })
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error occurred: {str(e)}")
 
 
-@app.get("/audio/{file_name}")
-async def get_audio(file_name: str, background_tasks: BackgroundTasks):
-    file_path = Path.cwd() / file_name
-    if not file_path.exists():
-        raise HTTPException(status_code=404, detail="Audio file not found.")
-    
-    background_tasks.add_task(delete_audio_file, file_path,filename=file_name,background=background_tasks ) # Ensures deletion happens after serving # Cleanup after serving
-    return FileResponse(file_path, media_type="audio/mpeg")
+# @app.get("/audio/{file_name}")
+# async def get_audio(file_name: str, background_tasks: BackgroundTasks):
+#     # Serves the audio file and schedules its deletion after serving.
+#     file_path = Path(file_name)
+
+#     if not file_path.exists():
+#         raise HTTPException(status_code=404, detail="Audio file not found.")
+
+#     # Schedule the audio file for deletion after serving
+#     background_tasks.add_task(delete_audio_file, file_path)
+
+#     # Serve the file
+#     return FileResponse(file_path, media_type="audio/mpeg")
 
 @app.post("/uploadfile/")
 async def upload_file(file: UploadFile = File(...), storage: dict = Depends(get_storage)):

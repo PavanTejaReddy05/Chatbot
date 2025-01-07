@@ -21,41 +21,61 @@ export class IndexComponent {
   onSubmit() {
     const token = localStorage.getItem('jwtToken');
     if (!token) {
-      this.responseText = 'Please log in to ask questions.';
-      alert("Session expired, Please Login again...");
-      this.router.navigate(['/signin']);
-      return;
+        this.responseText = 'Please log in to ask questions.';
+        alert("Session expired, Please Login again...");
+        this.router.navigate(['/signin']);
+        return;
     }
-  
+
     const headers = { Authorization: `Bearer ${token}` };
     this.http.post<any>('http://127.0.0.1:8000/ask', { question: this.userInput }, { headers })
-      .subscribe(
-        response => {this.responseText = response.answer;
-          if (response.audio_url) {
-            const audio = new Audio(response.audio_url);
-            audio.play().catch(error => {
-              this.responseText='Audio playback failed:', {error};
-              console.error('Audio playback failed:', error);
-            });
-          } else {
-            console.log('Audio URL not available in the response.');
-            this.responseText = 'Audio URL not available in the response.';
-          }
-        },
-        error => {
-          console.error('Error:', error);
-          if (error.status === 401) {
-            this.responseText = 'Your session has expired. Please log in again.';
-            localStorage.removeItem('jwtToken');
-            alert("Session expired, Please Login again...");
-            this.router.navigate(['/signin']);
-          } else {
-            this.responseText = 'An error occurred while fetching the response.';
-          }
-        }
-      );
-    }
-          
+        .subscribe(
+            response => {
+                // Display the text response
+                this.responseText = response.answer;
+
+                // Handle Base64-encoded audio
+                if (response.audio_base64) {
+                    try {
+                        // Decode Base64 and convert to binary data
+                        const binaryAudio = atob(response.audio_base64);
+                        const binaryData = Uint8Array.from(binaryAudio, char => char.charCodeAt(0));
+
+                        // Create a Blob for the audio
+                        const audioBlob = new Blob([binaryData], { type: "audio/mpeg" });
+
+                        // Generate a URL for the Blob
+                        const audioUrl = URL.createObjectURL(audioBlob);
+
+                        // Play the audio
+                        const audio = new Audio(audioUrl);
+                        audio.play().catch(error => {
+                            console.error('Audio playback failed:', error);
+                            this.responseText = 'Audio playback failed.';
+                        });
+                    } catch (error) {
+                        console.error('Failed to decode or play the audio:', error);
+                        this.responseText = 'Failed to decode or play the audio.';
+                    }
+                } else {
+                    console.log('Audio data not available in the response.');
+                    this.responseText = 'Audio data not available in the response.';
+                }
+            },
+            error => {
+                console.error('Error:', error);
+                if (error.status === 401) {
+                    this.responseText = 'Your session has expired. Please log in again.';
+                    localStorage.removeItem('jwtToken');
+                    alert("Session expired, Please Login again...");
+                    this.router.navigate(['/signin']);
+                } else {
+                    this.responseText = 'An error occurred while fetching the response.';
+                }
+            }
+        );
+  }
+
   
   
   // Handle file selection
