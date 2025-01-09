@@ -2,8 +2,8 @@ import os
 import re
 from pymongo import MongoClient
 from pathlib import Path
-from uuid import uuid4
 import pdfplumber
+import docx
 from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.responses import RedirectResponse
@@ -14,7 +14,6 @@ from pydantic import BaseModel
 import cohere
 import base64
 from gtts import gTTS
-from typing import Dict
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from jose import jwt
@@ -64,10 +63,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.state.storage = {"pdf_text": ""}  # Shared storage
-
 def get_storage():
-    return app.state.storage
+    return {}
 
 class Question(BaseModel):
     question: str
@@ -135,10 +132,25 @@ def LogIn(ema:str, Pwd:str):
     else:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-# def delete_audio_file(file_path: str):
-#     if os.path.exists(file_path):
-#         os.remove(file_path)
-#         print(f"Deleted file: {file_path}")
+def extract_text_from_pdf(file):
+    text = ""
+    with pdfplumber.open(file) as pdf:
+        text = "\n".join(page.extract_text() for page in pdf.pages if page.extract_text())
+    return text
+
+def extract_text_from_docx(file):
+    text = ""
+    try:
+        doc = docx.Document(file)  # Open the DOCX file
+        print(f"Number of paragraphs: {len(doc.paragraphs)}")  # Print number of paragraphs for debugging
+        text = "\n".join(paragraph.text for paragraph in doc.paragraphs)  # Extract and join text from all paragraphs
+        if not text:
+            print("No text extracted from DOCX file.")
+        return text
+    except Exception as e:
+        print(f"Error while extracting text from DOCX: {str(e)}")
+        return text
+
 async def delete_audio_file(file_path: Path):
     """
     Deletes the specified audio file.
@@ -149,13 +161,44 @@ async def delete_audio_file(file_path: Path):
     except Exception as e:
         print(f"Failed to delete file {file_path}: {e}")
 
+storage = {}
+
+@app.post("/uploadfile/")
+async def upload_file(file: UploadFile = File(...)):
+    try:
+        print(f"Uploaded file: {file.filename}, File extension: {file.filename.split('.')[-1]}")
+        file_content = await file.read() 
+        print(f"File content size: {len(file_content)} bytes")
+        
+        # Validate file extension and extract text
+        if file.filename.endswith('.pdf'):
+            text = extract_text_from_pdf(file.file)
+            storage['pdf_text'] = text
+        elif file.filename.endswith('.docx'):
+            text = extract_text_from_docx(file.file)
+            storage['docx_text'] = text
+        else:
+            raise HTTPException(status_code=400, detail="Only PDF and DOCX files are supported.")
+        
+        # If no text is extracted, raise an error
+        if not text:
+            raise HTTPException(status_code=400, detail="No readable text found in the document.")
+
+        contact_numbers = re.findall(r'\+?\d[\d -]{8,}\d', text)
+
+        return JSONResponse(content={"contact_numbers": contact_numbers, "full_text": text[:500]})
+
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
+
 @app.post("/ask")
 async def ask_cohere(
     question: Question,
-    background_tasks: BackgroundTasks,
-    storage: dict = Depends(get_storage),
     credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())
-):
+    ):
+    global storage  # Access the global storage variable
     token = credentials.credentials
     print(f"Received token: {token}")
     
@@ -166,9 +209,9 @@ async def ask_cohere(
             status_code=401
         )
         
-    text = storage.get('pdf_text')
+    text = storage.get('pdf_text') or storage.get('docx_text')  # Check for both PDF and DOCX text
     if not text:
-        raise HTTPException(status_code=400, detail="No PDF content available. Please upload a PDF first.")
+        raise HTTPException(status_code=400, detail="No document content available. Please upload a PDF or DOCX first.")
 
     try:
         # Prepare the prompt
@@ -212,32 +255,3 @@ async def ask_cohere(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error occurred: {str(e)}")
 
-
-# @app.get("/audio/{file_name}")
-# async def get_audio(file_name: str, background_tasks: BackgroundTasks):
-#     # Serves the audio file and schedules its deletion after serving.
-#     file_path = Path(file_name)
-
-#     if not file_path.exists():
-#         raise HTTPException(status_code=404, detail="Audio file not found.")
-
-#     # Schedule the audio file for deletion after serving
-#     background_tasks.add_task(delete_audio_file, file_path)
-
-#     # Serve the file
-#     return FileResponse(file_path, media_type="audio/mpeg")
-
-@app.post("/uploadfile/")
-async def upload_file(file: UploadFile = File(...), storage: dict = Depends(get_storage)):
-    try:
-        with pdfplumber.open(file.file) as pdf:
-            text = "\n".join(page.extract_text() for page in pdf.pages if page.extract_text())
-        if not text:
-            raise HTTPException(status_code=400, detail="No readable text found in the PDF.")
-        storage['pdf_text'] = text
-        contact_numbers = re.findall(r'\+?\d[\d -]{8,}\d', text)
-        return JSONResponse(content={"contact_numbers": contact_numbers, "full_text": text[:500]})
-    except pdfplumber.exceptions.PDFSyntaxError:
-        raise HTTPException(status_code=400, detail="Invalid PDF file format.")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))

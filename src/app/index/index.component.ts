@@ -81,8 +81,23 @@ export class IndexComponent {
   // Handle file selection
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
+  
     if (input?.files?.length) {
       this.selectedFile = input.files[0];
+      
+      // Check if the selected file is either PDF or DOC
+      const validTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      ];
+      
+      if (!validTypes.includes(this.selectedFile.type)) {
+        this.responseText = 'Please upload a PDF, DOC, or DOCX file.';
+        alert('Only PDF, DOC, and DOCX files are allowed.');
+        return;
+      }
+  
       const formData = new FormData();
       formData.append('file', this.selectedFile);
   
@@ -106,5 +121,5 @@ export class IndexComponent {
           }
         );
     }
-  }
+  }  
 }  

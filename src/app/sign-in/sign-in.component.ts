@@ -37,36 +37,3 @@ export class SigninComponent {
   );
   }
 }
-// ---------------------------------------------------------------------------
-// <html>
-//     <body>
-//         <div class="signin-container">
-//             <h1 id="h1">Signin Form</h1>
-//             <form [formGroup]="signinForm" (ngSubmit)="onSubmit()">
-//                 <div class="cred">
-//                     <div class="dtls">
-//                         <label  for="uname" id="uname" name="User Name">Username:</label>
-//                         <input id="dtls" formControlName="uname" type="text" placeholder="Email or Username">
-//                         <div *ngIf="signinForm.get('uname')?.invalid && signinForm.get('uname')?.touched">
-//                             Username is Required
-//                         </div>
-//                     </div>
-//                     <div class="dtls">
-//                         <label for="pwd" id="pwd" name="Password">Password:</label>
-//                         <input id="dtls" formControlName="pwd" type="password" placeholder="password">
-//                         <div *ngIf="signinForm.get('pwd')?.invalid && signinForm.get('pwd')?.touched">
-//                             Password is Required
-//                         </div>
-//                     </div>
-//                 </div>
-//                 <a>Forgot Password?</a>
-//                 <div class="btn">
-//                     <button  id="btn" type="submit" [disabled]="signinForm.invalid"]>Sign In</button>
-//                 </div>
-//                 <div class="reg">
-//                     <p>New user?  <a id="sp" routerLink="/signup">Create New Account..</a></p>
-//                 </div>
-//             </form>
-//         </div>
-//     </body>
-// </html>

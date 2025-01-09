@@ -9,13 +9,15 @@ import { RouterModule } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { SignupComponent } from './signup/signup.component';
 import { IndexComponent } from './index/index.component';
+import { ForgotpwdComponent } from './forgotpwd/forgotpwd.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     SigninComponent,
     SignupComponent,
-    IndexComponent
+    IndexComponent,
+    ForgotpwdComponent
   ],
   imports: [
     BrowserModule,

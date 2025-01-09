@@ -6,15 +6,16 @@
         <div class="nm">
           <div class="nm1">
             <label for="First_Name">First Name:</label>
-            <input id="First_Name" formControlName="First_Name" type="text" />
+            <input id="First_Name" formControlName="First_Name" type="text" (keypress)="allowOnlyLettersFN($event)"/>
             <div *ngIf="signupForm.get('First_Name')?.invalid && signupForm.get('First_Name')?.touched">
               First Name is required.
             </div>
+            <div *ngIf="message" class="error-message">{{ message }}</div>
           </div>
 
           <div class="nm2">
             <label for="Last_Name">Last Name:</label>
-            <input id="Last_Name" formControlName="Last_Name" type="text" />
+            <input id="Last_Name" formControlName="Last_Name" type="text" (keypress)="allowOnlyLettersLN($event)"/>
             <div *ngIf="signupForm.get('Last_Name')?.invalid && signupForm.get('Last_Name')?.touched">
               Last Name is required.
             </div>
@@ -31,7 +32,7 @@
     
         <div>
           <label for="Ph_No">Phone Number:</label>
-          <input id="Ph_No" formControlName="Ph_No" type="text" />
+          <input id="Ph_No" formControlName="Ph_No" type="text" (keypress)="allowOnlyNumbers($event)" length="10" />
           <div *ngIf="signupForm.get('Ph_No')?.invalid && signupForm.get('Ph_No')?.touched">
             Please enter a valid 10-digit phone number.
           </div>
@@ -60,7 +61,9 @@
             Please confirm your password.
           </div>
         </div>
-
+        <div *ngIf="signupForm.hasError('passwordMismatch') && signupForm.get('Confirm_Password')?.dirty">
+          Passwords do not match.
+        </div>
         <div>
           <p>Already have an account? <a id="si" routerLink="/signin">Log in</a></p>    
         </div>
